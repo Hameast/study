@@ -7,12 +7,12 @@ public class ReviewDemo01 {
         int number = sc.nextInt();
         int cnt = 0;
 
-        for(int k=1; k<=number; k++){
+        for(int k=2; k<number; k++){
             if(number % k == 0)
                 cnt++;
         }
 
-        if(cnt == 2)
+        if(cnt == 0)
             System.out.println(number + "은(는) 소수!");
         else
             System.out.println(number + "은(는) 소수가 아닙니다");
