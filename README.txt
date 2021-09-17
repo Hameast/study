@@ -17,3 +17,6 @@ Ver0
 
 Ver1
 - for문 초기값, 조건 변경으로 반복횟수 2회 감소
+
+Ver2
+- int cnt 변수를 boolean isPrime으로 변경 후 출력 조건 수정
