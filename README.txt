@@ -22,4 +22,7 @@ Ver2
 - int cnt 변수를 boolean isPrime으로 변경 후 출력 조건 수정
 
 Ver3
--for문 속 if문에 break를 추가하여 반복횟수 획기적 감소
+- for문 속 if문에 break를 추가하여 반복횟수 획기적 감소
+
+Ver4
+- for문을 while문으로 변경
