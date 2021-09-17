@@ -8,8 +8,10 @@ public class ReviewDemo01 {
         boolean isPrime = true;
 
         for(int k=2; k<number; k++){
-            if(number % k == 0)
+            if(number % k == 0) {
                 isPrime = false;
+                break;
+            }
         }
 
         if(isPrime)
