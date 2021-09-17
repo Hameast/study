@@ -17,10 +17,6 @@ public class ReviewDemo01 {
             k++;
         }
 
-        if(isPrime)
-            System.out.println(number + "은(는) 소수!");
-        else
-            System.out.println(number + "은(는) 소수가 아닙니다");
-
+        System.out.println(isPrime?number + "은(는) 소수!":number + "은(는) 소수가 아닙니다");
     }
 }

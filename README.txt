@@ -26,3 +26,6 @@ Ver3
 
 Ver4
 - for문을 while문으로 변경
+
+Ver5
+- 출력 조건 if문 대신 삼항조건자 사용
