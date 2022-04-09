@@ -9,6 +9,7 @@ int main(){
   
   cnt = 3;
   
+  
   do
   {
     cout << cnt << "do while문과 goto문을 연습해 봅시다.\n";
