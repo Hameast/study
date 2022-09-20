@@ -1,4 +1,5 @@
 import test as t
+import baekjoon as b
 
 if __name__ == '__main__':
-    print(t.fib(6))
+    b.b18258()
