@@ -18,7 +18,3 @@ def b18258():
             print(qu[0] if qu else -1)
         elif order[0] == 'back':
             print(qu[-1] if qu else -1)
-
-
-
-b18258()
