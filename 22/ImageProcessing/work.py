@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
+import time
 
 
 '''
@@ -92,3 +94,115 @@ def work3():
     cv2.imshow('src', img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+
+def work4():
+    src = cv2.imread('./data/166.jpg', cv2.IMREAD_GRAYSCALE)
+    rate = 0.35
+    src = cv2.resize(src, (int(src.shape[1] * rate), int(src.shape[0] * rate)))
+
+    cv2.imshow('src', src)
+
+    ret, dst = cv2.threshold(src, 215, 255, cv2.THRESH_BINARY)
+    cv2.imshow('dst', dst)
+
+    dst2 = cv2.adaptiveThreshold(src, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 51, 7)
+    cv2.imshow('dst2', dst2)
+
+    dst3 = cv2.adaptiveThreshold(src, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 51, 7)
+    cv2.imshow('dst3', dst3)
+
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+
+
+def work5():
+    src = cv2.imread('./data/virus2.jpg', cv2.IMREAD_GRAYSCALE)
+
+    # hist2 = cv2.calcHist(images=[src], channels=[0], mask=None,
+    #                      histSize=[256], ranges=[0, 256])
+    # hist2 = hist2.flatten()
+
+    hist = [0 for _ in range(256)]
+    for vals in src:
+        for val in vals:
+            hist[val] += 1
+
+    plt.title('work5')
+    plt.plot(hist, color='r')
+    binX = np.arange(256)
+    plt.bar(binX, hist, width=1, color='b')
+    plt.show()
+
+
+def work6():
+    image = cv2.imread('./data/darthallway.jpg', cv2.IMREAD_GRAYSCALE)
+
+    bins, ranges = [256], [0, 256]
+    hist = cv2.calcHist([image], [0], None, bins, ranges)  # 히스토그램 계산
+
+    # 히스토그램 누적합 계산
+    accum_hist = np.zeros(hist.shape[:2], np.float32)
+    accum_hist[0] = hist[0]
+    for i in range(1, hist.shape[0]):
+        accum_hist[i] = accum_hist[i - 1] + hist[i]
+
+    accum_hist = (accum_hist / sum(hist)) * 255  # 누적합의 정규화
+    dst1 = [[accum_hist[val] for val in row] for row in image]  # 화소값 할당
+    dst1 = np.array(dst1, np.uint8)
+
+    dst2 = cv2.equalizeHist(image)  # OpenCV 히스토그램 평활화
+
+    cv2.imshow("image", image);
+    cv2.imshow("dst1_User", dst1);
+    cv2.imshow("dst2_OpenCV", dst2);
+
+
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    src = cv2.imread('./data/darthallway.jpg')
+
+    cv2.imshow("src", src)
+
+    src = cv2.cvtColor(src, cv2.COLOR_BGR2YCrCb)
+    cv2.imshow("src2", src)
+    dst2 = src.copy()
+
+    dst2[:, :, 0] = cv2.equalizeHist(src[:, :, 0])
+    dst2 = cv2.cvtColor(dst2, cv2.COLOR_YCrCb2BGR)
+    cv2.imshow("dst2_OpenCV", dst2);
+
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
