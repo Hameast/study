@@ -1,23 +1,28 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QLabel, QLineEdit, QTextEdit)
 
 
 class MyApp(QWidget):
 
-  def __init__(self):
-      super().__init__()
-      self.initUI()
+    def __init__(self):
+        super().__init__()
+        self.initUI()
 
-  def initUI(self):
-      btn = QPushButton('Quit', self)
-      btn.move(50, 50)
-      btn.resize(btn.sizeHint())
-      btn.clicked.connect(QCoreApplication.instance().quit)
+    def initUI(self):
+        grid = QGridLayout()
+        self.setLayout(grid)
 
-      self.setWindowTitle('Quit Button')
-      self.setGeometry(300, 300, 300, 200)
-      self.show()
+        grid.addWidget(QLabel('Title:'), 0, 0)
+        grid.addWidget(QLabel('Author:'), 1, 0)
+        grid.addWidget(QLabel('Review:'), 2, 0)
+
+        grid.addWidget(QLineEdit(), 0, 1)
+        grid.addWidget(QLineEdit(), 1, 1)
+        grid.addWidget(QTextEdit(), 2, 1)
+
+        self.setWindowTitle('QGridLayout')
+        self.setGeometry(300, 300, 300, 200)
+        self.show()
 
 
 if __name__ == '__main__':
