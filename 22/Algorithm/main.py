@@ -4,7 +4,7 @@ import baekjoon as b
 
 
 def main():
-    print(t.fib(12))
+    print(1.1 + 0.1)
 
 
 if __name__ == '__main__':

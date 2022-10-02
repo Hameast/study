@@ -14,6 +14,6 @@ if __name__ == '__main__':
 
     # my_function의 함수를 호출하여
     # 최대값, 최소값, 평균값 출력
-    print(f"최대값은 : {mf.getMax(li)}")
-    print(f"최소값은 : {mf.getMin(li)}")
-    print(f"평균값은 : {mf.getAvg(li)}")
+    print("최대값은 :", mf.getMax(li))
+    print("최소값은 :", mf.getMin(li))
+    print("평균값은 :", mf.getAvg(li))

@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+from Common.filters import filter
+from  Common.filters import differential
 
 
 def test_add():
@@ -150,3 +152,69 @@ def test_equalizeHist():
     plt.legend(loc='best')
     plt.show()
 
+
+def test_blur():
+    src = cv2.imread('./data/lena.jpg', cv2.IMREAD_GRAYSCALE)
+
+    dst1 = cv2.boxFilter(src, ddepth=-1, ksize=(11, 11))
+    dst2 = cv2.boxFilter(src, ddepth=-1, ksize=(21, 21))
+
+    dst3 = cv2.bilateralFilter(src, d=11, sigmaColor=10, sigmaSpace=10)
+    dst4 = cv2.bilateralFilter(src, d=-1, sigmaColor=10, sigmaSpace=10)
+
+    cv2.imshow('dst1', dst1)
+    cv2.imshow('dst2', dst2)
+    cv2.imshow('dst3', dst3)
+    cv2.imshow('dst4', dst4)
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+
+
+def test_sharpening():
+    image = cv2.imread("./data/filter_sharpen.jpg", cv2.IMREAD_GRAYSCALE)  # 영상 읽기
+    if image is None: raise Exception("영상파일 읽기 오류")
+
+    # 샤프닝 마스크 원소 지정
+    data1 = [0, -1, 0,
+             -1, 5, -1,
+             0, -1, 0]
+    data2 = [[-1, -1, -1],
+             [-1, 9, -1],
+             [-1, -1, -1]]
+    mask1 = np.array(data1, np.float32).reshape(3, 3)
+    mask2 = np.array(data2, np.float32)
+
+    sharpen1 = filter(image, mask1)  # 회선 수행 – 저자 구현 함
+    sharpen2 = filter(image, mask2)
+    sharpen1 = cv2.convertScaleAbs(sharpen1)
+    sharpen2 = cv2.convertScaleAbs(sharpen2)
+
+    cv2.imshow("image", image)
+    cv2.imshow("sharpen1", cv2.convertScaleAbs(sharpen1))  # 윈도우 표시 위한 형변환
+    cv2.imshow("sharpen2", cv2.convertScaleAbs(sharpen2))
+    cv2.waitKey(0)
+
+
+def test_sobel():
+    image = cv2.imread("./data/work3.jpg", cv2.IMREAD_GRAYSCALE)
+    if image is None: raise Exception("영상파일 읽기 오류")
+
+    data1 = [-1, 0, 1,  # 수직 마스크
+             -2, 0, 2,
+             -1, 0, 1]
+    data2 = [-1, -2, -1,  # 수평 마스크
+             0, 0, 0,
+             1, 2, 1]
+    dst, dst1, dst2 = differential(image, data1, data2)  # 두 방향 회선 및 크기(에지 강도) 계산
+    # OpenCV 제공 소벨 에지 계산
+    dst3 = cv2.Sobel(np.float32(image), cv2.CV_32F, 1, 0, 3)  # x방향 미분 - 수직 마스크
+    dst4 = cv2.Sobel(np.float32(image), cv2.CV_32F, 0, 1, 3)  # y방향 미분 - 수평 마스크
+    dst3 = cv2.convertScaleAbs(dst3)  # 절댓값 및 uint8 형변환
+    dst4 = cv2.convertScaleAbs(dst4)
+
+    cv2.imshow("openCV Sobel", dst)
+    #cv2.imshow("dst1- vertical_mask", dst1)
+    #cv2.imshow("dst2- horizontal_mask", dst2)
+    cv2.imshow("dst3- vertical_OpenCV", dst3)
+    cv2.imshow("dst4- horizontal_OpenCV", dst4)
+    # cv2.waitKey(0)

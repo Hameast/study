@@ -135,7 +135,7 @@ def work5():
     plt.show()
 
 
-def work6():
+def work6_equelize():
     image = cv2.imread('./data/darthallway.jpg', cv2.IMREAD_GRAYSCALE)
 
     bins, ranges = [256], [0, 256]
@@ -174,6 +174,50 @@ def work6():
     cv2.imshow("dst2_OpenCV", dst2);
 
     cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+def work_sobel():
+    print("work sobel")
+    Sx = [
+        [-1, 0, 1],
+        [-2, 0, 2],
+        [-1, 0, 1]
+    ]
+    Sy = [
+        [-1, -2, -1],
+        [0, 0, 0],
+        [1, 2, 1]
+    ]
+    src = cv2.imread('./data/work3.jpg', cv2.IMREAD_GRAYSCALE)
+    imgx = np.zeros(shape=(len(src), len(src[0]), 3), dtype=np.uint8)
+    imgy = np.zeros(shape=(len(src), len(src[0]), 3), dtype=np.uint8)
+    imgm = np.zeros(shape=(len(src), len(src[0]), 3), dtype=np.uint8)
+
+    for i, row in enumerate(src):
+        if (i > 0) and (i < len(src) - 1):
+            for j, col in enumerate(row):
+                tempx = 0
+                tempy = 0
+                if (j > 0) and (j < len(row) - 1):
+                    for ii in range(3):
+                        for jj in range(3):
+                            tempx += (Sx[ii][jj] * src[i + ii - 1][j + jj - 1])
+                            tempy += (Sy[ii][jj] * src[i + ii - 1][j + jj - 1])
+                tempx, tempy = abs(tempx), abs(tempy)
+                tempx, tempy = 255 if tempx > 255 else tempx, 255 if tempy > 255 else tempy
+
+                imgx[i][j] = tempx
+                imgy[i][j] = tempy
+
+                merge = (tempx**2 + tempy**2)**(1/2)
+                imgm[i][j] = 255 if merge > 255 else merge
+
+    cv2.imshow('src', src)
+    cv2.imshow('dstX', imgx)
+    cv2.imshow('dstY', imgy)
+    cv2.imshow('My Sobel', imgm)
+    cv2.waitKey()
     cv2.destroyAllWindows()
 
 

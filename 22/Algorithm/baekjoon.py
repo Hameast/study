@@ -18,3 +18,14 @@ def b18258():
             print(qu[0] if qu else -1)
         elif order[0] == 'back':
             print(qu[-1] if qu else -1)
+
+
+def b3003():
+    correct = [1, 1, 2, 2, 2, 8]
+    li = list(map(int, input().split()))
+
+    for i, val in enumerate(li):
+        print(correct[i] - val)
+
+
+
