@@ -1,18 +1,23 @@
-# 0605.py
 import cv2
-import numpy as np
-#1
-src = cv2.imread('./data/lena.jpg', cv2.IMREAD_GRAYSCALE)
-blur= cv2.GaussianBlur(src, ksize=(7, 7), sigmaX=0.0)
-cv2.imshow('src',  src)
-cv2.imshow('blur', blur)
-#2
-lap  = cv2.Laplacian(src, cv2.CV_32F)
-minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(lap)
-print('lap:', minVal, maxVal, minLoc, maxLoc)
-dst = cv2.convertScaleAbs(lap)
-dst = cv2.normalize(dst, None, 0, 255, cv2.NORM_MINMAX)
-cv2.imshow('lap',  lap)
-cv2.imshow('dst',  dst)
-cv2.waitKey()
-cv2.destroyAllWindows()
+
+
+def onTrackbar(th):  # 트랙바 콜백 함수
+    rep_edge = cv2.GaussianBlur(rep_gray, (5, 5), 0)  # 가우시안 블러링
+    rep_edge = cv2.Canny(rep_edge, th, th * 2, 5)  # 캐니 에지 검출
+    h, w = image.shape[:2]
+    cv2.rectangle(rep_edge, (0, 0, w, h), 255, -1)  # 흰색 사각형 그리기
+    color_edge = cv2.bitwise_and(rep_image, rep_image, mask=rep_edge)
+    cv2.imshow("color edge", color_edge)
+
+
+image = cv2.imread("./data/carnum.png", cv2.IMREAD_COLOR)
+if image is None: raise Exception("영상파일 읽기 오류")
+
+th = 50
+rep_image = cv2.repeat(image, 1, 2)  # 가로 반복 복사
+rep_gray = cv2.cvtColor(rep_image, cv2.COLOR_BGR2GRAY)  # 명암도 영상 변환
+
+cv2.namedWindow("color edge", cv2.WINDOW_AUTOSIZE)  # 윈도우 생성
+cv2.createTrackbar("Canny th", "color edge", th, 100, onTrackbar)  # 콜백 함수 등록
+onTrackbar(th)  # 콜백 함수 첫 실행
+cv2.waitKey(0)

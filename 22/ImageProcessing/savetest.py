@@ -217,4 +217,4 @@ def test_sobel():
     #cv2.imshow("dst2- horizontal_mask", dst2)
     cv2.imshow("dst3- vertical_OpenCV", dst3)
     cv2.imshow("dst4- horizontal_OpenCV", dst4)
-    # cv2.waitKey(0)
+    cv2.waitKey(0)

@@ -16,7 +16,7 @@ Lena 이미지를 불러와서 다음 조건에 따라 픽셀단위로 색처리
 •Red 채널은 Green채널을 서로 교환해 주세요.
 •이렇게 변경된 이미지를 화면에 출력해 주세요.
 '''
-def work1():
+def work1_lena():
     img = cv2.imread('./data/lena.jpg')
     cv2.imshow('src', img)
     img2 = img.copy()
@@ -221,7 +221,15 @@ def work_sobel():
     cv2.destroyAllWindows()
 
 
+def work_carnum():
+    src = cv2.imread('./data/carnum.png', cv2.IMREAD_GRAYSCALE)
 
+    canny2 = cv2.Canny(src, 25, 150)
+
+    cv2.imshow('carnum', src)
+    cv2.imshow("OpenCV_Canny", canny2)  # OpenCV 캐니 에지
+    cv2.waitKey()
+    cv2.destroyAllWindows()
 
 
 

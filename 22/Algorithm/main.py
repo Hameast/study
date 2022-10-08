@@ -4,11 +4,13 @@ import baekjoon as b
 
 
 def main():
-    print(1.1 + 0.1)
+    print(t.palindrome("Wow"))
+    print(t.palindrome("Madam, I’m Adam."))
+    print(t.palindrome("Madam, I am Adam."))
 
 
 if __name__ == '__main__':
     st = time.time()
     main()
     en = time.time()
-    print(f"\nIt takes : {en - st}[sec]")
+    print("\n\n\nIt takes", en - st, "sec")
