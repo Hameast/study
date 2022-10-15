@@ -1,23 +1,51 @@
+# 0705.py
 import cv2
+import numpy as np
 
 
-def onTrackbar(th):  # 트랙바 콜백 함수
-    rep_edge = cv2.GaussianBlur(rep_gray, (5, 5), 0)  # 가우시안 블러링
-    rep_edge = cv2.Canny(rep_edge, th, th * 2, 5)  # 캐니 에지 검출
-    h, w = image.shape[:2]
-    cv2.rectangle(rep_edge, (0, 0, w, h), 255, -1)  # 흰색 사각형 그리기
-    color_edge = cv2.bitwise_and(rep_image, rep_image, mask=rep_edge)
-    cv2.imshow("color edge", color_edge)
+def onChange(pos):  # 트랙바 핸들러
+    lowerb1 = (cv2.getTrackbarPos('low_B', 'dst'),
+               cv2.getTrackbarPos('low_G', 'dst'),
+               cv2.getTrackbarPos('low_R', 'dst'))
+    upperb1 = (cv2.getTrackbarPos('up_B', 'dst'),
+               cv2.getTrackbarPos('up_G', 'dst'),
+               cv2.getTrackbarPos('up_R', 'dst'))
+    dst1 = cv2.inRange(hsv1, lowerb1, upperb1)
+    cv2.imshow('dst1', dst1)
 
 
-image = cv2.imread("./data/carnum.png", cv2.IMREAD_COLOR)
-if image is None: raise Exception("영상파일 읽기 오류")
+# 1
+src1 = cv2.imread('./data/carnum.png')
+hsv1 = cv2.cvtColor(src1, cv2.COLOR_BGR2HSV)
 
-th = 50
-rep_image = cv2.repeat(image, 1, 2)  # 가로 반복 복사
-rep_gray = cv2.cvtColor(rep_image, cv2.COLOR_BGR2GRAY)  # 명암도 영상 변환
+cv2.imshow('dst', src1)
+cv2.createTrackbar('low_B', 'dst', 0, 255, onChange)
+cv2.setTrackbarPos('low_B', 'dst', 0)
+cv2.createTrackbar('low_G', 'dst', 0, 255, onChange)
+cv2.setTrackbarPos('low_G', 'dst', 40)
+cv2.createTrackbar('low_R', 'dst', 0, 255, onChange)
+cv2.setTrackbarPos('low_R', 'dst', 0)
+cv2.createTrackbar('up_B', 'dst', 0, 255, onChange)
+cv2.setTrackbarPos('up_B', 'dst', 20)
+cv2.createTrackbar('up_G', 'dst', 0, 255, onChange)
+cv2.setTrackbarPos('up_G', 'dst', 180)
+cv2.createTrackbar('up_R', 'dst', 0, 255, onChange)
+cv2.setTrackbarPos('up_R', 'dst', 255)
+onChange(0)
 
-cv2.namedWindow("color edge", cv2.WINDOW_AUTOSIZE)  # 윈도우 생성
-cv2.createTrackbar("Canny th", "color edge", th, 100, onTrackbar)  # 콜백 함수 등록
-onTrackbar(th)  # 콜백 함수 첫 실행
-cv2.waitKey(0)
+# lowerb1 = (0, 40, 0)
+# upperb1 = (20, 180, 255)
+# dst1 = cv2.inRange(hsv1, lowerb1, upperb1)
+# cv2.imshow('dst1', dst1)
+
+# #2
+# mode = cv2.RETR_EXTERNAL
+# method = cv2.CHAIN_APPROX_SIMPLE
+# ##method =cv2.CHAIN_APPROX_NONE
+# contours, hierarchy = cv2.findContours(dst1, mode, method)
+# cv2.drawContours(src1, contours, -1, (255,0,0), 3) # 모든 윤곽선
+# cv2.imshow('src', src1)
+
+
+cv2.waitKey()
+cv2.destroyAllWindows()

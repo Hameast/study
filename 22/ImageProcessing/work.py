@@ -232,6 +232,77 @@ def work_carnum():
     cv2.destroyAllWindows()
 
 
+def work_coins():
+    src = cv2.imread("./data/coins1.jpg")
+    src2 = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+    gauss_img2 = cv2.GaussianBlur(src2, (7, 7), 0)
+    cv2.imshow('gaus', gauss_img2)
+
+    canny_img1 = cv2.Canny(gauss_img2, 50, 200)
+
+    cv2.imshow('canny', canny_img1)
+
+    circles1 = cv2.HoughCircles(canny_img1, method=cv2.HOUGH_GRADIENT, dp=1, minDist=150, param2=15)
+    lines1 = cv2.HoughLinesP(canny_img1, rho=1, theta=np.pi / 180.0, threshold=100)
+
+    coin_sum = 0
+    for circle in circles1[0, :]:
+        cx, cy, r = map(int, circle)
+        if r > 80:
+            pass
+        else:
+            cv2.circle(src, (cx, cy), r, (0, 0, 255), 2)
+            coin_sum += 100 if r > 50 else 10
+
+    for line in lines1[0:1]:
+        x1, y1, x2, y2 = line[0]
+        cv2.line(src, (x1, y1), (x2, y2), (0, 0, 255), 2)
+
+    cv2.imshow('src1', src)
+    print(coin_sum)
+
+    print("총액은", coin_sum, "입니다")
+
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+
+
+def work_contour():
+    # 1
+    src1 = cv2.imread('./data/hand.jpg')
+    hsv1 = cv2.cvtColor(src1, cv2.COLOR_BGR2HSV)
+
+    lowerb1 = (0, 40, 0)
+    upperb1 = (20, 180, 255)
+    dst1 = cv2.inRange(hsv1, lowerb1, upperb1)
+
+    # 2
+    mode = cv2.RETR_TREE
+    method = cv2.CHAIN_APPROX_SIMPLE
+    contours, hierarchy = cv2.findContours(dst1, mode, method)
+    cv2.drawContours(src1, contours, -1, (255, 0, 0), 3)  # 모든 윤곽선
+
+    cv2.imshow('hand', src1)
+
+    # 1
+    src1 = cv2.imread('./data/flower.jpg')
+    hsv1 = cv2.cvtColor(src1, cv2.COLOR_BGR2HSV)
+
+    lowerb1 = (150, 100, 100)
+    upperb1 = (180, 255, 255)
+    dst1 = cv2.inRange(hsv1, lowerb1, upperb1)
+
+    # 2
+    mode = cv2.RETR_TREE
+    method = cv2.CHAIN_APPROX_SIMPLE
+    contours, hierarchy = cv2.findContours(dst1, mode, method)
+    cv2.drawContours(src1, contours, -1, (255, 0, 0), 3)  # 모든 윤곽선
+
+    cv2.imshow('flower', src1)
+
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+
 
 
 
