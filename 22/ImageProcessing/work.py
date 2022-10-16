@@ -222,12 +222,40 @@ def work_sobel():
 
 
 def work_carnum():
-    src = cv2.imread('./data/carnum.png', cv2.IMREAD_GRAYSCALE)
+    src = cv2.imread('./data/carnum.png')
+    if src is None: raise Exception("영상파일 읽기 오류")
+    srccopy = src.copy()
 
-    canny2 = cv2.Canny(src, 25, 150)
+    hsv1 = cv2.cvtColor(srccopy, cv2.COLOR_BGR2HSV)
+    lowerb1 = (25, 0, 90)
+    upperb1 = (90, 190, 220)
+    dst1 = cv2.inRange(hsv1, lowerb1, upperb1)
 
-    cv2.imshow('carnum', src)
-    cv2.imshow("OpenCV_Canny", canny2)  # OpenCV 캐니 에지
+    mask = np.array([[0, 1, 0],  # 마스크 초기화
+                     [1, 1, 1],
+                     [0, 1, 0]]).astype("uint8")
+    dstcopy = dst1.copy()
+
+    for _ in range(8):
+        dstcopy = cv2.erode(dstcopy, mask)
+    for _ in range(50):
+        dstcopy = cv2.dilate(dstcopy, mask)
+    for _ in range(42):
+        dstcopy = cv2.erode(dstcopy, mask)
+
+    contours, hierarchy = cv2.findContours(dstcopy, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
+    for i in contours:
+        hull = cv2.convexHull(i, clockwise=True)
+        cv2.drawContours(dstcopy, [hull], 0, (255, 255, 255), 2)
+
+    cv2.fillPoly(srccopy, [hull], (0, 0, 0))
+    roi = cv2.subtract(src, srccopy)
+    print(hull)
+
+    cv2.imshow('src', src)
+    cv2.imshow("convex hull", dstcopy)
+    cv2.imshow("fillPoly", srccopy)
+    cv2.imshow("roi", roi)
     cv2.waitKey()
     cv2.destroyAllWindows()
 
