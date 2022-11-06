@@ -1,51 +1,57 @@
-# 0705.py
-import cv2
-import numpy as np
+import numpy as np, cv2
 
 
-def onChange(pos):  # 트랙바 핸들러
-    lowerb1 = (cv2.getTrackbarPos('low_B', 'dst'),
-               cv2.getTrackbarPos('low_G', 'dst'),
-               cv2.getTrackbarPos('low_R', 'dst'))
-    upperb1 = (cv2.getTrackbarPos('up_B', 'dst'),
-               cv2.getTrackbarPos('up_G', 'dst'),
-               cv2.getTrackbarPos('up_R', 'dst'))
-    dst1 = cv2.inRange(hsv1, lowerb1, upperb1)
-    cv2.imshow('dst1', dst1)
+def click_point(event, x, y, flags, param):
+    global pts1, test
+    if event == cv2.EVENT_FLAG_LBUTTON and pts1.shape[0] != 4:
+        cv2.rectangle(img_c, (x-10, y-10), (x+10, y+10), (0, 255, 0), 1)
+        cv2.imshow("image", img_c)
+        test.append([x, y])
+        pts1 = np.float32(test)
 
 
-# 1
-src1 = cv2.imread('./data/carnum.png')
-hsv1 = cv2.cvtColor(src1, cv2.COLOR_BGR2HSV)
+image = cv2.imread('./data/perspective2.jpg', cv2.IMREAD_COLOR)
+if image is None: raise Exception("영상 파일을 읽기 에러")
+cv2.imshow("image", image)
+img_c = image.copy()
+cv2.setMouseCallback('image', click_point)
 
-cv2.imshow('dst', src1)
-cv2.createTrackbar('low_B', 'dst', 0, 255, onChange)
-cv2.setTrackbarPos('low_B', 'dst', 0)
-cv2.createTrackbar('low_G', 'dst', 0, 255, onChange)
-cv2.setTrackbarPos('low_G', 'dst', 40)
-cv2.createTrackbar('low_R', 'dst', 0, 255, onChange)
-cv2.setTrackbarPos('low_R', 'dst', 0)
-cv2.createTrackbar('up_B', 'dst', 0, 255, onChange)
-cv2.setTrackbarPos('up_B', 'dst', 20)
-cv2.createTrackbar('up_G', 'dst', 0, 255, onChange)
-cv2.setTrackbarPos('up_G', 'dst', 180)
-cv2.createTrackbar('up_R', 'dst', 0, 255, onChange)
-cv2.setTrackbarPos('up_R', 'dst', 255)
-onChange(0)
+test = []
+pts1 = np.float32([])
+pts2 = np.float32([(0, 0), (image.shape[1] - 1, 0), (0, image.shape[0] - 1), (image.shape[1] - 1, image.shape[0] - 1)])
 
-# lowerb1 = (0, 40, 0)
-# upperb1 = (20, 180, 255)
-# dst1 = cv2.inRange(hsv1, lowerb1, upperb1)
-# cv2.imshow('dst1', dst1)
+while pts1.shape[0] != 4:
+    cv2.waitKey(1)
 
-# #2
-# mode = cv2.RETR_EXTERNAL
-# method = cv2.CHAIN_APPROX_SIMPLE
-# ##method =cv2.CHAIN_APPROX_NONE
-# contours, hierarchy = cv2.findContours(dst1, mode, method)
-# cv2.drawContours(src1, contours, -1, (255,0,0), 3) # 모든 윤곽선
-# cv2.imshow('src', src1)
+test.sort(key=lambda x: (x[1], x[0]))
+print(test)
 
+test1 = test[:2]
+test1.sort(key=lambda x:x[0])
+test2 = test[2:]
+test2.sort(key=lambda x:x[0])
 
-cv2.waitKey()
-cv2.destroyAllWindows()
+test = test1 + test2
+
+print(test1)
+print(test2)
+
+print(test)
+pts1 = np.float32(test)
+
+cv2.line(img_c, test[0], test[1], (0,255,0), 1)
+cv2.line(img_c, test[0], test[2], (0,255,0), 1)
+cv2.line(img_c, test[3], test[1], (0,255,0), 1)
+cv2.line(img_c, test[3], test[2], (0,255,0), 1)
+cv2.imshow("image", img_c)
+
+perspect_mat = cv2.getPerspectiveTransform(pts1, pts2)  # .astype('float32')
+dst = cv2.warpPerspective(image, perspect_mat, image.shape[1::-1], cv2.INTER_CUBIC)
+
+## 변환 좌표 계산 - 행렬 내적 이용 방법
+ones = np.ones((4, 1), np.float64)
+pts3 = np.append(pts1, ones, axis=1)  # 원본 좌표 -> 동차 좌표 저장
+pts4 = cv2.gemm(pts3, perspect_mat.T, 1, None, 1)  # 행렬 곱으로 좌표 변환값 계산
+
+cv2.imshow("dst_perspective", dst)
+cv2.waitKey(0)

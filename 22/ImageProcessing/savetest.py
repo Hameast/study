@@ -83,7 +83,7 @@ def test_threshold2():
 
 # for trackBar
 def onChange(pos):  # 트랙바 핸들러
-    pass
+    a = 12
 
 
 def test_trackbar_threshold():

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 import time
-
+from Common.hough import *  # 허프 변환 관련 사용자 정의 함수 포함
 
 '''
 2주차 과제
@@ -16,6 +16,8 @@ Lena 이미지를 불러와서 다음 조건에 따라 픽셀단위로 색처리
 •Red 채널은 Green채널을 서로 교환해 주세요.
 •이렇게 변경된 이미지를 화면에 출력해 주세요.
 '''
+
+
 def work1_lena():
     img = cv2.imread('./data/lena.jpg')
     cv2.imshow('src', img)
@@ -27,7 +29,7 @@ def work1_lena():
     #        img[y, x, 1] = img[y, x, 1] + 50 if img[y, x, 1] + 50 < 255 else 255  # G-채널
     #        img[y, x, 2] = img[y, x, 2] - 60 if img[y, x, 2] - 60 > 0 else 0      # R-채널
 
-    img = cv2.add(img2, (40, 50, -60, 0))   # R, G, B 순서
+    img = cv2.add(img2, (40, 50, -60, 0))  # R, G, B 순서
 
     cv2.imshow('colorChange', img)
 
@@ -52,7 +54,7 @@ def work2():
     dst = np.round((img - min_val) * ratio).astype('uint8')
     (min_dst, max_dst, _, _) = cv2.minMaxLoc(dst)
 
-    dst2 = (img + (255-max_val)).astype('uint8')
+    dst2 = (img + (255 - max_val)).astype('uint8')
 
     print("원본 영상 최솟값= %d , 최댓값= %d" % (min_val, max_val))
     print("수정 영상 최솟값= %d , 최댓값= %d" % (min_dst, max_dst))
@@ -61,12 +63,15 @@ def work2():
     cv2.imshow("dst2", dst2)
     cv2.waitKey(0)
 
+
 '''
 다음 조건에 맞게 코딩 작성한 후에 제출해주세요. 
 아래 KSB 드라마 용의눈물 포스터 이미지를 사용하세요. 
 RGB 컬러 영상을 불러와서 흑백영상으로 변환하여 저장하세요. 
 단, 픽셀단위로 YCbCr영상으로 변환한 후에 Y영상만 추출하여 흑백영상으로 저장합니다. 픽셀단위로 변환시에 OpenCV의 cvtColor 메소드를 사용하지 마세요
 '''
+
+
 def work3():
     img = cv2.imread('./data/work3.jpg')
     # dst = img.copy()
@@ -88,8 +93,7 @@ def work3():
     #         dst[x, y, 1] = (b[x][y]-dst[x, y, 0]) * 0.564 + 128
     #         dst[x, y, 2] = (r[x][y]-dst[x, y, 0]) * 0.713 + 128
 
-
-    img  = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     cv2.imshow('dst', dst.astype('uint8'))
     cv2.imshow('src', img)
     cv2.waitKey(0)
@@ -157,7 +161,6 @@ def work6_equelize():
     cv2.imshow("dst1_User", dst1);
     cv2.imshow("dst2_OpenCV", dst2);
 
-
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -210,7 +213,7 @@ def work_sobel():
                 imgx[i][j] = tempx
                 imgy[i][j] = tempy
 
-                merge = (tempx**2 + tempy**2)**(1/2)
+                merge = (tempx ** 2 + tempy ** 2) ** (1 / 2)
                 imgm[i][j] = 255 if merge > 255 else merge
 
     cv2.imshow('src', src)
@@ -224,6 +227,7 @@ def work_sobel():
 def work_carnum():
     src = cv2.imread('./data/carnum.png')
     if src is None: raise Exception("영상파일 읽기 오류")
+    src = cv2.resize(src, (500, 300))
     srccopy = src.copy()
 
     hsv1 = cv2.cvtColor(srccopy, cv2.COLOR_BGR2HSV)
@@ -332,28 +336,65 @@ def work_contour():
     cv2.destroyAllWindows()
 
 
+def detect_maxObject(img):
+    results = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if int(cv2.__version__[0]) >= 4:  # Opnecv 4.0은 2원소 튜플 반환
+        contours = results[0]
+    else:
+        contours = results[1]  # OpenCV 3.x은 3원소 튜플 반환
+    areas = [cv2.contourArea(c) for c in contours]
+    idx = np.argsort(areas)
+    max_rect = contours[idx[-1]]
+    rect = cv2.boundingRect(max_rect)  # 외곽선을 모두 포함하는 사각형 반환
+    # rect = np.add(rect, (-10, -10, 20, 20))  # 검출 객체 사각형 크기 확대
+    return rect
 
 
+def work_turning():
+    image = cv2.imread('./data/LGPhone.jpg', cv2.IMREAD_COLOR)
 
+    srccopy = image.copy()
+    hsv1 = cv2.cvtColor(srccopy, cv2.COLOR_BGR2HSV)
+    lowerb1 = (50, 50, 0)
+    upperb1 = (200, 200, 200)
+    dst1 = cv2.inRange(hsv1, lowerb1, upperb1)
 
+    mask = np.array([[0, 1, 0],  # 마스크 초기화
+                     [1, 1, 1],
+                     [0, 1, 0]]).astype("uint8")
+    dstcopy = dst1.copy()
 
+    for _ in range(1):
+        dstcopy = cv2.erode(dstcopy, mask)
+    for _ in range(2):
+        dstcopy = cv2.dilate(dstcopy, mask)
+    for _ in range(1):
+        dstcopy = cv2.erode(dstcopy, mask)
 
+    rho, theta = 1, np.pi / 180  # 허프변환 거리간격, 각도간격
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # 명암도 영상 변환
+    _, th_gray = cv2.threshold(gray, 180, 200, cv2.THRESH_BINARY)  # 이진 영상 변환
+    cv2.imshow('test', th_gray)
+    kernel = np.ones((3, 3), np.uint8)
+    morph = cv2.erode(th_gray, kernel, iterations=0)  # 침식 연산 - 2번 반복
 
+    x, y, w, h = detect_maxObject(np.copy(morph))  # 가장 큰 객체 검출
+    roi = th_gray[y:y + h, x:x + w]
 
+    canny = cv2.Canny(roi, 40, 100)  # 캐니 에지 검출
+    lines = cv2.HoughLines(canny, rho, theta, 50)  # OpenCV 함수
 
+    cv2.rectangle(morph, (x, y, w, h), 100, 2)  # 큰 객체 사각형 표시
+    canny_line = draw_houghLines(canny, lines, 1)  # 직선 표시
+    angle = (np.pi - lines[0, 0, 1]) * 180 / np.pi  # 회전 각도 계산
+    h, w = image.shape[:2]
+    center = (w // 2, h // 2)  # 입력 영상의 중심점
+    rot_map = cv2.getRotationMatrix2D(center, -angle, 1)  # 반대방향 회전 행렬 계산
+    dst = cv2.warpAffine(image, rot_map, (w, h), cv2.INTER_LINEAR)  # 역회전 수행
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    cv2.imshow("image", image)
+    cv2.imshow("morph", dstcopy)
+    cv2.imshow("line_detect", canny_line)
+    cv2.resizeWindow("line_detect", 250, canny_line.shape[0])
+    cv2.imshow("dst", dst)
+    cv2.waitKey(0)
