@@ -1,57 +1,48 @@
-import numpy as np, cv2
+# 0815.py
+import cv2
+import numpy as np
 
+#1
+src = cv2.imread('./data/hand.jpg')
+hsv = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
+lowerb = (0, 40, 0)
+upperb = (20, 180, 255)
+bImage = cv2.inRange(hsv, lowerb, upperb)
 
-def click_point(event, x, y, flags, param):
-    global pts1, test
-    if event == cv2.EVENT_FLAG_LBUTTON and pts1.shape[0] != 4:
-        cv2.rectangle(img_c, (x-10, y-10), (x+10, y+10), (0, 255, 0), 1)
-        cv2.imshow("image", img_c)
-        test.append([x, y])
-        pts1 = np.float32(test)
+mode   = cv2.RETR_EXTERNAL
+method = cv2.CHAIN_APPROX_SIMPLE
+contours, hierarchy = cv2.findContours(bImage, mode, method)
 
+dst = src.copy()
+##cv2.drawContours(dst, contours, -1, (255,0,0), 3)
+cnt = contours[0]
+cv2.drawContours(dst, [cnt], 0, (255,0,0), 2)
 
-image = cv2.imread('./data/perspective2.jpg', cv2.IMREAD_COLOR)
-if image is None: raise Exception("영상 파일을 읽기 에러")
-cv2.imshow("image", image)
-img_c = image.copy()
-cv2.setMouseCallback('image', click_point)
+#2
+dst2 = dst.copy()
+rows,cols = dst2.shape[:2]
+hull = cv2.convexHull(cnt, returnPoints = False)
+hull_points = cnt[hull[:,0]]
+cv2.drawContours(dst2, [hull_points], 0, (255,0,255), 6)
+# 3
+T = 5  # 10
+defects = cv2.convexityDefects(cnt, hull)
+print('defects.shape=', defects.shape)
+for i in range(defects.shape[0]):
+    s, e, f, d = defects[i, 0]
+    dist = d / 256
+    start = tuple(cnt[s][0])
+    end = tuple(cnt[e][0])
+    far = tuple(cnt[f][0])
+    if dist > T:
+        cv2.line(dst2, start, end, [255, 255, 0], 2)
+        cv2.line(dst2, start, far, [0, 255, 0], 1)
+        cv2.line(dst2, end, far, [0, 255, 0], 1)
 
-test = []
-pts1 = np.float32([])
-pts2 = np.float32([(0, 0), (image.shape[1] - 1, 0), (0, image.shape[0] - 1), (image.shape[1] - 1, image.shape[0] - 1)])
+        cv2.circle(dst2, start, 5, [0, 255, 255], -1)
+        cv2.circle(dst2, end, 5, [0, 128, 255], -1)
+        cv2.circle(dst2, far, 5, [0, 0, 255], -1)
+cv2.imshow('dst2', dst2)
 
-while pts1.shape[0] != 4:
-    cv2.waitKey(1)
-
-test.sort(key=lambda x: (x[1], x[0]))
-print(test)
-
-test1 = test[:2]
-test1.sort(key=lambda x:x[0])
-test2 = test[2:]
-test2.sort(key=lambda x:x[0])
-
-test = test1 + test2
-
-print(test1)
-print(test2)
-
-print(test)
-pts1 = np.float32(test)
-
-cv2.line(img_c, test[0], test[1], (0,255,0), 1)
-cv2.line(img_c, test[0], test[2], (0,255,0), 1)
-cv2.line(img_c, test[3], test[1], (0,255,0), 1)
-cv2.line(img_c, test[3], test[2], (0,255,0), 1)
-cv2.imshow("image", img_c)
-
-perspect_mat = cv2.getPerspectiveTransform(pts1, pts2)  # .astype('float32')
-dst = cv2.warpPerspective(image, perspect_mat, image.shape[1::-1], cv2.INTER_CUBIC)
-
-## 변환 좌표 계산 - 행렬 내적 이용 방법
-ones = np.ones((4, 1), np.float64)
-pts3 = np.append(pts1, ones, axis=1)  # 원본 좌표 -> 동차 좌표 저장
-pts4 = cv2.gemm(pts3, perspect_mat.T, 1, None, 1)  # 행렬 곱으로 좌표 변환값 계산
-
-cv2.imshow("dst_perspective", dst)
-cv2.waitKey(0)
+cv2.waitKey()
+cv2.destroyAllWindows()

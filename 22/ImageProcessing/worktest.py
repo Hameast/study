@@ -1,76 +1,36 @@
-# 12214063 함동균
+# 0207.py
 import cv2
-import numpy as np
-from matplotlib import pyplot as plt
 
-src = cv2.imread('./data/carnum.png')
-if src is None: raise Exception("영상파일 읽기 오류")
-# src = cv2.resize(src, (500, 300))
-srccopy = src.copy()
+lowerb1 = (0, 0, 0)
+upperb1 = (255, 255, 180)
 
-hsv1 = cv2.cvtColor(srccopy, cv2.COLOR_BGR2HSV)
-lowerb1 = (25, 0, 90)
-upperb1 = (90, 190, 220)
-dst1 = cv2.inRange(hsv1, lowerb1, upperb1)
+cap = cv2.VideoCapture('./data/duck1.mp4')
 
-mask = np.array([[0, 1, 0],  # 마스크 초기화
-                 [1, 1, 1],
-                 [0, 1, 0]]).astype("uint8")
-dstcopy = dst1.copy()
+frame_size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
+              int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+print('frame_size =', frame_size)
 
-for _ in range(8):
-    dstcopy = cv2.erode(dstcopy, mask)
-for _ in range(50):
-    dstcopy = cv2.dilate(dstcopy, mask)
-for _ in range(70):
-    dstcopy = cv2.erode(dstcopy, mask)
+K = 5
+while True:
+    retval, frame = cap.read()  # 프레임 캡처
+    if not retval:
+        break
+    frame = cv2.resize(frame, (960, 540))
 
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    ret, gray = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
 
-contours, hierarchy = cv2.findContours(dstcopy, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
-for i in contours:
-    hull = cv2.convexHull(i, clockwise=True)
-    cv2.drawContours(dstcopy, [hull], 0, (255, 255, 255), 2)
+    hsv1 = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    dst1 = cv2.inRange(hsv1, lowerb1, upperb1)
+    dst1 = cv2.bitwise_not(dst1)
 
-cnt = contours[0]
-x, y, w, h = cv2.boundingRect(cnt)
+    cv2.imshow('frame', frame)
+    cv2.imshow('gray', gray)  # threshold
+    cv2.imshow('dst1', dst1)  # inRange
 
-cv2.fillPoly(srccopy, [hull], (0, 0, 0))
-roi = cv2.subtract(src, srccopy)
-# cv2.rectangle(src, (x, y), (x + w, y + h), (0, 0, 255), 3)
-
-test = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-ret, dst2 = cv2.threshold(test, 200, 255, cv2.THRESH_BINARY)
-# print('ret=', ret)
-
-# for _ in range(2):
-#     dst2 = cv2.erode(dst2, mask)
-for _ in range(7):
-    dst2 = cv2.dilate(dst2, mask)
-
-
-
-ret, labels, stats, centroids = cv2.connectedComponentsWithStats(dst2)
-# print('ret =', ret)
-# print('stats =', stats)
-# print('centroids =', centroids)
-
-#4
-for i in range(1, int(ret)):
-    x, y, width, height, area = stats[i]
-    cv2.rectangle(src, (x,y), (x+width, y+height), (0, 0, 255), 2)
-
-
-cv2.imshow('src', src)
-cv2.imshow("convex hull", dstcopy)
-cv2.imshow("fillPoly", srccopy)
-cv2.imshow("roi", roi)
-cv2.imshow('dst2', dst2)
-
-cv2.waitKey()
+    key = cv2.waitKey(0)
+    if key == 27:  # Esc
+        break
+if cap.isOpened():
+    cap.release()
 cv2.destroyAllWindows()
-
-
-
-
-
-
